@@ -1,8 +1,8 @@
 module Motion
   class Layout
     def initialize(&block)
-      @verticals   = []
-      @horizontals = []
+      @verticals   = [] # array of hash
+      @horizontals = [] # array of hash
       @metrics     = {}
 
       yield self
@@ -21,12 +21,12 @@ module Motion
       @view = view
     end
 
-    def horizontal(horizontal)
-      @horizontals << horizontal
+    def horizontal(horizontal, options=NSLayoutFormatAlignAllCenterY)
+      @horizontals << {format: horizontal, options: options}
     end
 
-    def vertical(vertical)
-      @verticals << vertical
+    def vertical(vertical, options=NSLayoutFormatAlignAllCenterX)
+      @verticals << {format: vertical, options: options}
     end
 
     private
@@ -40,11 +40,11 @@ module Motion
       views = @subviews.merge("superview" => @view)
 
       constraints = []
-      constraints += @verticals.map do |vertical|
-        NSLayoutConstraint.constraintsWithVisualFormat("V:#{vertical}", options:NSLayoutFormatAlignAllCenterX, metrics:@metrics, views:views)
+      constraints += @verticals.map do |vertical_hash|
+        NSLayoutConstraint.constraintsWithVisualFormat("V:#{vertical_hash[:format]}", options:vertical_hash[:options], metrics:@metrics, views:views)
       end
-      constraints += @horizontals.map do |horizontal|
-        NSLayoutConstraint.constraintsWithVisualFormat("H:#{horizontal}", options:NSLayoutFormatAlignAllCenterY, metrics:@metrics, views:views)
+      constraints += @horizontals.map do |horizontal_hash|
+        NSLayoutConstraint.constraintsWithVisualFormat("H:#{horizontal_hash[:format]}", options:horizontal_hash[:options], metrics:@metrics, views:views)
       end
 
       @view.addConstraints(constraints.flatten)
